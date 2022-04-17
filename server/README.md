@@ -4,7 +4,6 @@
 
 * [Python 3.10](https://www.python.org/)
 * [pip](https://pip.pypa.io/en/stable/installation/)
-* virtualenv
 
 ## Get started
 

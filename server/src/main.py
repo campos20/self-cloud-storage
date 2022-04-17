@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 
-app = FastAPI()
+from .controller import file_controller, user_controller
 
-@app.get("/")
-async def root():
-    return {"message": "Hello World"}
+app = FastAPI()
+app.include_router(file_controller.router)
+app.include_router(user_controller.router)

@@ -3,17 +3,32 @@ import os
 import time
 
 import requests
+from pydantic import BaseModel
 from requests.models import Response
 
-# User login at http://localhost:8081/auth/realms/CloudStorage/account
+# Keycloak main configuration:  http://localhost:8080/auth/admin/
+# User login:                   http://localhost:8080/auth/admin/CloudStorage/console/#/realms/CloudStorage
+
+
+class User(BaseModel):
+    username: str
+    password: str
+    role: str
+    realm_managements: list[str] = []
+
 
 DEFAULT_REALM = 'CloudStorage'
 DEFAULT_CLIENT_ID = 'cloud-storage-api'
 KEYCLOAK_HOST = os.environ.get('KEYCLOAK_HOST', 'http://localhost:8080')
 MASTER_USER = 'keycloak'
 MASTER_PASSWORD = 'keycloak'
-USERS = 'admin', 'operator', 'user'
 WAIT_LIMIT = 20
+USERS = [
+    User(username='user', password='user', role='user'),
+    User(username='operator', password='operator', role='operator'),
+    User(username='admin', password='admin',
+         role='admin', realm_managements=['view-realm', 'manage-users']),
+]
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger()
@@ -63,7 +78,7 @@ def analyze_creation_response(response: Response, entity):
         raise Exception("Invalid response code: %s" % status_code)
 
 
-def create(url, data, entity):
+def create(url, data, entity=None):
     headers = get_headers()
     response = requests.post(url, json=data, headers=headers)
     analyze_creation_response(response, entity)
@@ -78,12 +93,12 @@ def create_realm():
     create(url, data, "Realm")
 
 
-def create_user(user):
-    log.info("Create user %s" % user)
+def create_user(user: User):
+    log.info("Create user %s" % user.username)
 
     url = "%s/auth/admin/realms/%s/users" % (KEYCLOAK_HOST, DEFAULT_REALM)
     data = {"enabled": True, "attributes": [],
-            "username": user, "emailVerified": ""}
+            "username": user.username, "emailVerified": ""}
 
     create(url, data, "User")
 
@@ -116,21 +131,55 @@ def get_users():
     return default_get(url)
 
 
-def change_password(user):
-    username = user["username"]
-    user_id = user["id"]
+def change_password(keycloak_user, user: User):
+    username = keycloak_user["username"]
+    user_id = keycloak_user["id"]
     log.info("Change password of user %s" % username)
+
+    password = user.password
 
     url = "%s/auth/admin/realms/%s/users/%s/reset-password" % (
         KEYCLOAK_HOST, DEFAULT_REALM, user_id)
-    data = {"type": "password", "value": username, "temporary": False}
+    data = {"type": "password", "value": password, "temporary": False}
 
     default_put(url, data)
 
 
-def change_passwords(users):
-    for user in users:
-        change_password(user)
+def find_realm_role(realm_roles, management_name: str):
+    return next((x for x in realm_roles if x['name'] == management_name), None)['id']
+
+
+def change_realm_permissions(keycloak_user, user: User, client, realm_roles):
+    realm_managements = user.realm_managements
+    if len(realm_managements) < 1:
+        return
+    username = keycloak_user['username']
+    log.info(f'Assign realm management for {username}')
+
+    user_id = keycloak_user["id"]
+    client_id = client["id"]
+
+    url = f'{KEYCLOAK_HOST}/auth/admin/realms/{DEFAULT_REALM}/users/{user_id}/role-mappings/clients/{client_id}'
+
+    data = list(map(lambda x: {'name': x, 'id': find_realm_role(
+        realm_roles, x)}, realm_managements))
+    create(url, data)
+
+
+def get_roles(realm_client):
+    client_id = realm_client['id']
+    url = f'{KEYCLOAK_HOST}/auth/admin/realms/{DEFAULT_REALM}/clients/{client_id}/roles'
+    return default_get(url)
+
+
+def change_user_details(users, realm_client):
+    realm_roles = get_roles(realm_client)
+    for keycloak_user in users:
+        user = next(
+            (x for x in USERS if x.username == keycloak_user["username"]), None)
+        change_password(keycloak_user, user)
+        change_realm_permissions(
+            keycloak_user, user, realm_client, realm_roles)
 
 
 def create_client():
@@ -143,8 +192,7 @@ def create_client():
 
 
 def get_clients():
-    url = "%s/auth/admin/realms/%s/clients?clientId=%s&viewableOnly=true" % (
-        KEYCLOAK_HOST, DEFAULT_REALM, DEFAULT_CLIENT_ID)
+    url = f'{KEYCLOAK_HOST}/auth/admin/realms/{DEFAULT_REALM}/clients?viewableOnly=true'
     return default_get(url)
 
 
@@ -161,7 +209,7 @@ def create_role(url, role):
 def create_roles(client):
     url = "%s/auth/admin/realms/%s/clients/%s/roles" % (
         KEYCLOAK_HOST, DEFAULT_REALM, client["id"])
-    for user in USERS:
+    for user in list(dict.fromkeys(map(lambda x: x.role, USERS))):
         create_role(url, user_to_role(user))
 
 
@@ -176,7 +224,7 @@ def assign_role(user, client, role):
     data = [{"id": role['id'], "name": role['name'], "composite": False,
              "clientRole": True, "containerId": client_id}]
 
-    create(url, data, None)
+    create(url, data)
 
 
 def get_role(roles, username):
@@ -227,6 +275,11 @@ def wait_for_start():
         log.info("." * i)
 
 
+def get_client(clients, client_id):
+    return next(
+        (x for x in clients if x["clientId"] == client_id), None)
+
+
 def main():
 
     wait_for_start()
@@ -235,18 +288,18 @@ def main():
 
     create_realm()
 
-    create_users()
-    users = get_users()
-    change_passwords(users)
-
     create_client()
     clients = get_clients()
-    client = next(
-        (x for x in clients if x["clientId"] == DEFAULT_CLIENT_ID), None)
+    api_client = get_client(clients, DEFAULT_CLIENT_ID)
+    realm_client = get_client(clients, 'realm-management')
 
-    create_roles(client)
-    roles = get_roles(client)
-    assign_roles(users, client, roles)
+    create_users()
+    users = get_users()
+    change_user_details(users, realm_client)
+
+    create_roles(api_client)
+    roles = get_roles(api_client)
+    assign_roles(users, api_client, roles)
 
     change_token_timeout()
 

@@ -1,0 +1,39 @@
+version: "3"
+
+services:
+  cloudstorage-api-db:
+    container_name: cloudstorage-api-db
+    image: postgres:14
+    environment:
+      POSTGRES_DB: cloudstorage_db
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: password
+    volumes:
+      - "./db/migration/:/docker-entrypoint-initdb.d/"
+      - "./db/00_keycloak_schema.sql:/docker-entrypoint-initdb.d/00_keycloak_schema.sql"
+    ports:
+      - "5432:5432"
+  cloudstorage-api-keycloak:
+    container_name: cloudstorage-api-keycloak
+    image: jboss/keycloak:16.1.1
+    environment:
+      DB_VENDOR: POSTGRES
+      DB_ADDR: cloudstorage-api-db
+      DB_DATABASE: cloudstorage_db
+      DB_USER: root
+      DB_PASSWORD: password
+      DB_SCHEMA: keycloak
+      KEYCLOAK_USER: keycloak
+      KEYCLOAK_PASSWORD: keycloak
+    ports:
+      - "8080:8080"
+    depends_on:
+      - cloudstorage-api-db
+  cloudstorage-keycloak-configuration:
+    container_name: cloudstorage-keycloak-configuration
+    image: python:3.8-slim-buster
+    volumes:
+      - "./keycloak/configuration.py/:/configuration.py"
+      - "./keycloak/requirements.txt/:/requirements.txt"
+    entrypoint: sh -c "pip3 install -r requirements.txt;python configuration.py"
+    network_mode: host

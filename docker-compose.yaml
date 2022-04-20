@@ -31,7 +31,7 @@ services:
       - cloudstorage-api-db
   cloudstorage-keycloak-configuration:
     container_name: cloudstorage-keycloak-configuration
-    image: python:3.8-slim-buster
+    image: python:3.10-slim-buster
     volumes:
       - "./keycloak/configuration.py/:/configuration.py"
       - "./keycloak/requirements.txt/:/requirements.txt"

@@ -1,4 +1,5 @@
 from ..api import keycloak_api
+from ..config.log_config import log
 
 
 def get_my_user():
@@ -6,6 +7,8 @@ def get_my_user():
 
 
 def create_user(email: str, password: str):
-    keycloak_api.login()
+    log.info(f'Create user {email}')
+
+    response = keycloak_api.create_user(email, password)
 
     return {'email': email, 'active': True}

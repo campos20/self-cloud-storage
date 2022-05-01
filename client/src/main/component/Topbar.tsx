@@ -17,6 +17,7 @@ export const Topbar = ({ links }: TopbarProps) => {
         mode="horizontal"
         defaultSelectedKeys={[links[0].path]}
         items={items}
+        theme="dark"
       />
     </header>
   );

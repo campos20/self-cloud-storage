@@ -11,13 +11,9 @@ cached_token = ''
 cached_expiration = datetime.now()
 
 
-def login():
-    password = settings.keycloak_password
-    url = f'{settings.keycloak_url}/auth/realms/{settings.realm_name}/protocol/openid-connect/auth'
-    print(f'password {password}')
+def _cache_token():
+    global cached_token, cached_expiration
 
-
-def cache_token():
     log.info('Get token')
     url = f'{settings.keycloak_url}/auth/realms/{settings.keycloak_realm}/protocol/openid-connect/token'
 
@@ -33,24 +29,21 @@ def cache_token():
 
     response_json = response.json()
 
-    global cached_token
-    global cached_expiration
-
     cached_token = response_json["access_token"]
     cached_expiration = datetime.now(
     ) + timedelta(seconds=response_json["expires_in"])
 
 
-def get_cached_token():
+def _get_cached_token():
     global cached_token, cached_expiration
 
     if not cached_token or datetime.now() - timedelta(seconds=15) > cached_expiration:
-        cache_token()
+        _cache_token()
     return cached_token
 
 
-def get_headers():
-    token = get_cached_token()
+def _get_headers():
+    token = _get_cached_token()
     return {'Authorization': f'Bearer {token}'}
 
 
@@ -71,7 +64,7 @@ def create_user(user: UserCreateRequest):
         "credentials": [{"type": "password", "value": user.password, "temporary": False}]
     }
 
-    headers = get_headers()
+    headers = _get_headers()
 
     response = requests.post(url, json=json, headers=headers)
 

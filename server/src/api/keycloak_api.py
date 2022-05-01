@@ -74,5 +74,3 @@ def create_user(email: str, password: str):
     if not response.ok:
         raise HTTPException(status_code=response.status_code,
                             detail=response.json()['errorMessage'])
-
-    log.info(r.status_code)

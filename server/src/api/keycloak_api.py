@@ -1,7 +1,8 @@
 from datetime import datetime, timedelta
-from fastapi import HTTPException
 
 import requests
+from fastapi import HTTPException
+from src.request.user_create_request import UserCreateRequest
 
 from ..config.application_config import settings
 from ..config.log_config import log
@@ -53,7 +54,7 @@ def get_headers():
     return {'Authorization': f'Bearer {token}'}
 
 
-def create_user(email: str, password: str):
+def create_user(user: UserCreateRequest):
     url = f'{settings.keycloak_url}/auth/admin/realms/{settings.keycloak_realm}/users'
     log.info(f'url = {url}')
 
@@ -61,10 +62,13 @@ def create_user(email: str, password: str):
         "enabled": True,
         "attributes": {},
         "groups": [],
-        "username": email,
+        "username": user.email,
         "emailVerified": "",
-        "email": email,
-        "credentials": [{"type": "password", "value": password, "temporary": False}]
+        "email": user.email,
+        "firstName": user.first_name,
+        "lastName": user.last_name,
+
+        "credentials": [{"type": "password", "value": user.password, "temporary": False}]
     }
 
     headers = get_headers()

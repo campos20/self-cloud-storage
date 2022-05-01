@@ -1,4 +1,6 @@
 from fastapi import APIRouter
+from src.request.user_create_request import UserCreateRequest
+
 from ..service import user_service
 
 router = APIRouter(prefix="/user", tags=["User"])
@@ -10,5 +12,5 @@ async def get_my_user():
 
 
 @router.post("/")
-async def create_user(email: str, password: str):
-    return user_service.create_user(email, password)
+async def create_user(user_create_request: UserCreateRequest):
+    return user_service.create_user(user_create_request)

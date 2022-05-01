@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from fastapi import HTTPException
 
 import requests
 
@@ -68,6 +69,10 @@ def create_user(email: str, password: str):
 
     headers = get_headers()
 
-    r = requests.post(url, json=json, headers=headers)
+    response = requests.post(url, json=json, headers=headers)
+
+    if not response.ok:
+        raise HTTPException(status_code=response.status_code,
+                            detail=response.json()['errorMessage'])
 
     log.info(r.status_code)

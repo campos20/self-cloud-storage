@@ -3,6 +3,8 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { LinkItem } from "../model/LinkItem";
 
+import "./Topbar.css";
+
 interface TopbarProps {
   links: LinkItem[];
 }
@@ -12,10 +14,13 @@ export const Topbar = ({ links }: TopbarProps) => {
     (links.find((it) => it.path === window.location.pathname) || links[0]).path
   );
 
-  const items = links.map((l) => ({
-    label: <Link to={l.path}>{l.title}</Link>,
-    key: l.path,
-  }));
+  const items = [
+    ...links.map((l) => ({
+      label: <Link to={l.path}>{l.title}</Link>,
+      key: l.path,
+    })),
+    { label: "Login", key: "login", id: "login" },
+  ];
 
   return (
     <Menu

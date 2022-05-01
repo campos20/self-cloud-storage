@@ -1,4 +1,5 @@
 import { Divider } from "antd";
+import { Link } from "react-router-dom";
 
 export const HomePage = () => {
   return (
@@ -10,7 +11,10 @@ export const HomePage = () => {
         <p>Store, protect, and retrieve your contents in the cloud</p>
         <div className="lead">
           <button className="btn btn-primary btn-lg">Login</button>
-          <button className="btn btn-primary btn-lg">Register</button>
+          {/* TODO this does not update highlight in the topbar */}
+          <Link to="register" className="btn btn-primary btn-lg">
+            Register
+          </Link>
         </div>
       </div>
     </>

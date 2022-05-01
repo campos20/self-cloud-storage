@@ -7,7 +7,7 @@ import { RegisterPage } from "./page/RegisterPage";
 export const App = () => {
   const links: LinkItem[] = [
     { path: "/", title: "Home", element: <HomePage /> },
-    { path: "register", title: "Register", element: <RegisterPage /> },
+    { path: "/register", title: "Register", element: <RegisterPage /> },
   ];
 
   return (

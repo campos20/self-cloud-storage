@@ -47,6 +47,27 @@ def get_cached_token():
     return cached_token
 
 
-def create_user(email: str, password: str):
+def get_headers():
     token = get_cached_token()
-    print(token)
+    return {'Authorization': f'Bearer {token}'}
+
+
+def create_user(email: str, password: str):
+    url = f'{settings.keycloak_url}/auth/admin/realms/{settings.keycloak_realm}/users'
+    log.info(f'url = {url}')
+
+    json = {
+        "enabled": True,
+        "attributes": {},
+        "groups": [],
+        "username": email,
+        "emailVerified": "",
+        "email": email,
+        "credentials": [{"type": "password", "value": password, "temporary": False}]
+    }
+
+    headers = get_headers()
+
+    r = requests.post(url, json=json, headers=headers)
+
+    log.info(r.status_code)

@@ -42,7 +42,6 @@
             "type": "python",
             "request": "launch",
             "module": "uvicorn",
-            "cwd": "server",
             "args": [
                 "src.main:app",
                 "--reload"

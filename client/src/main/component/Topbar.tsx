@@ -7,15 +7,17 @@ interface TopbarProps {
 }
 
 export const Topbar = ({ links }: TopbarProps) => {
+  const items = links.map((l) => ({
+    label: <Link to={l.path}>{l.title}</Link>,
+    key: l.path,
+  }));
   return (
     <header>
-      <Menu mode="horizontal" defaultSelectedKeys={[links[0].path]}>
-        {links.map((l) => (
-          <Menu.Item key={l.path}>
-            <Link to={l.path}>{l.title}</Link>
-          </Menu.Item>
-        ))}
-      </Menu>
+      <Menu
+        mode="horizontal"
+        defaultSelectedKeys={[links[0].path]}
+        items={items}
+      />
     </header>
   );
 };

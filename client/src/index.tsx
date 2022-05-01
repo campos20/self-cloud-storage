@@ -1,4 +1,5 @@
 import "antd/dist/antd.css";
+import "./index.css";
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { App } from "./main/App";

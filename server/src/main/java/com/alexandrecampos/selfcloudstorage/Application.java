@@ -4,10 +4,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class SelfcloudstorageApplication {
+public class Application {
 
-	public static void main(String[] args) {
-		SpringApplication.run(SelfcloudstorageApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(Application.class, args);
+    }
 
 }

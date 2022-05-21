@@ -1,22 +1,33 @@
 plugins {
-	id 'org.springframework.boot' version '2.7.0'
-	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
-	id 'java'
+    id 'org.springframework.boot' version '2.7.0'
+    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+    id 'java'
 }
 
 group = 'com.alexandrecampos'
 version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '17'
 
+ext {
+    lombokVersion = "1.18.24"
+}
+
 repositories {
-	mavenCentral()
+    mavenCentral()
 }
 
 dependencies {
-	implementation 'org.springframework.boot:spring-boot-starter'
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    implementation 'org.springframework.boot:spring-boot-starter'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+    compileOnly "org.projectlombok:lombok:$lombokVersion"
+    implementation "org.projectlombok:lombok:$lombokVersion"
+    annotationProcessor "org.projectlombok:lombok:$lombokVersion"
+
+    implementation 'com.amazonaws:aws-java-sdk-s3:1.12.225'
 }
 
 tasks.named('test') {
-	useJUnitPlatform()
+    useJUnitPlatform()
 }

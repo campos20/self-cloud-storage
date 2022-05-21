@@ -1,7 +1,9 @@
+import { ReactKeycloakProvider } from "@react-keycloak/web";
 import "antd/dist/antd.css";
-import "./index.css";
 import React from "react";
 import ReactDOM from "react-dom/client";
+import "./index.css";
+import keycloak from "./keycloak";
 import { App } from "./main/App";
 import reportWebVitals from "./reportWebVitals";
 
@@ -10,7 +12,9 @@ const root = ReactDOM.createRoot(
 );
 root.render(
   <React.StrictMode>
-    <App />
+    <ReactKeycloakProvider authClient={keycloak}>
+      <App />
+    </ReactKeycloakProvider>
   </React.StrictMode>
 );
 

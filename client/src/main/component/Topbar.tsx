@@ -1,8 +1,8 @@
+import { UserOutlined } from "@ant-design/icons";
 import { Menu } from "antd";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { LinkItem } from "../model/LinkItem";
-
 import "./Topbar.css";
 
 interface TopbarProps {
@@ -18,8 +18,9 @@ export const Topbar = ({ links }: TopbarProps) => {
     ...links.map((l) => ({
       label: <Link to={l.path}>{l.title}</Link>,
       key: l.path,
+      icon: l.icon,
     })),
-    { label: "Login", key: "login", id: "login" },
+    { label: "Login", key: "login", id: "login", icon: <UserOutlined /> },
   ];
 
   return (

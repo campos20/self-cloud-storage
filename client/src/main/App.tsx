@@ -1,3 +1,4 @@
+import { HomeOutlined, UserAddOutlined } from "@ant-design/icons";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Topbar } from "./component/Topbar";
 import { LinkItem } from "./model/LinkItem";
@@ -6,8 +7,13 @@ import { RegisterPage } from "./page/RegisterPage";
 
 export const App = () => {
   const links: LinkItem[] = [
-    { path: "/", title: "Home", element: <HomePage /> },
-    { path: "/register", title: "Register", element: <RegisterPage /> },
+    { path: "/", title: "Home", element: <HomePage />, icon: <HomeOutlined /> },
+    {
+      path: "/register",
+      title: "Register",
+      element: <RegisterPage />,
+      icon: <UserAddOutlined />,
+    },
   ];
 
   return (

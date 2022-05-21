@@ -1,4 +1,4 @@
-import { Divider } from "antd";
+import { Divider, message } from "antd";
 import React, { useState } from "react";
 import { userApi } from "../api/UserApi";
 import { UserCreate } from "../model/UserCreate";
@@ -24,7 +24,10 @@ export const RegisterPage = () => {
     }
     console.log(userCreate);
 
-    userApi.createUser(userCreate).then((response) => console.log(response));
+    userApi
+      .createUser(userCreate)
+      .then((response) => console.log(response))
+      .catch((e) => message.error(e));
   };
 
   const changeField = (
@@ -39,7 +42,7 @@ export const RegisterPage = () => {
       <Divider />
       <form className="container">
         <div className="form-group">
-          <label htmlFor="name">Name</label>
+          <label htmlFor="first_name">Name</label>
           <input
             required
             id="first_name"
@@ -50,7 +53,7 @@ export const RegisterPage = () => {
           />
         </div>
         <div className="form-group">
-          <label htmlFor="name">Last Name</label>
+          <label htmlFor="last_name">Last Name</label>
           <input
             required
             id="last_name"

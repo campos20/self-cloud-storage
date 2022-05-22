@@ -3,6 +3,7 @@ package com.alexandrecampos.selfcloudstorage.controller.impl;
 import com.alexandrecampos.selfcloudstorage.controller.S3Controller;
 import com.alexandrecampos.selfcloudstorage.service.S3Service;
 import com.amazonaws.services.s3.model.Bucket;
+import com.amazonaws.services.s3.model.S3ObjectSummary;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -16,5 +17,10 @@ public class S3ControllerImpl implements S3Controller {
     @Override
     public List<Bucket> listBuckets() {
         return s3Service.listBuckets();
+    }
+
+    @Override
+    public List<S3ObjectSummary> listObjects(String bucketName) {
+        return s3Service.listObjects(bucketName);
     }
 }

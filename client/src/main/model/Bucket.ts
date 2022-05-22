@@ -8,3 +8,13 @@ export interface Bucket {
   owner: Owner;
   creationDate: Date;
 }
+
+export interface BucketObject {
+  bucketName: string;
+  key: string;
+  size: number;
+  lastModified: Date;
+  storageClass: string;
+  owner: Owner;
+  etag: string;
+}

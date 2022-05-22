@@ -13,6 +13,7 @@ public class AwsS3Config {
     public AmazonS3 getAmazonS3Client() {
         return AmazonS3ClientBuilder
                 .standard()
+                .withRegion("sa-east-1")
                 .withCredentials(DefaultAWSCredentialsProviderChain.getInstance())
                 .build();
     }

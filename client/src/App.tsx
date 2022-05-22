@@ -1,6 +1,22 @@
+import { Table } from "antd";
 import { useCallback, useEffect, useState } from "react";
 import { s3Api } from "./main/api/S3Api";
 import { Bucket } from "./main/model/Bucket";
+
+const columns = [
+  {
+    title: "BUCKET",
+    dataIndex: "name",
+  },
+  {
+    title: "OWNER",
+    dataIndex: ["owner", "displayName"],
+  },
+  {
+    title: "CREATION",
+    dataIndex: "creationDate",
+  },
+];
 
 export const App = () => {
   const [buckets, setBuckets] = useState<Bucket[]>([]);
@@ -15,7 +31,7 @@ export const App = () => {
     <div className="App">
       <div>
         <h1>Self Cloud Storage</h1>
-        <div>You have {buckets.length} buckets</div>
+        {buckets.length > 0 && <Table columns={columns} dataSource={buckets} />}
       </div>
     </div>
   );

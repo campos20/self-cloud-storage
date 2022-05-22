@@ -1,0 +1,14 @@
+.bucket {
+  text-align: center;
+  border: 1px solid #bbb;
+  border-radius: 10px;
+  padding: 10px;
+}
+
+.bucket:hover {
+  background-color: #ddd;
+}
+
+.selectedBucket {
+  background-color: blue;
+}

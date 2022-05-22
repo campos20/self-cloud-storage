@@ -1,6 +1,7 @@
 import { FolderOutlined } from "@ant-design/icons";
 import { Col, Row } from "antd";
 import { useCallback, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { s3Api } from "../api/S3Api";
 import { Bucket } from "../model/Bucket";
 import style from "./BucketsComponent.module.css";
@@ -10,12 +11,21 @@ export const BucketsComponent = () => {
   const [buckets, setBuckets] = useState<Bucket[]>([]);
   const [selected, setSelected] = useState<number>();
 
+  const navigate = useNavigate();
+
   const fetchBuckets = useCallback(() => {
     s3Api.listBuckets().then((response) => setBuckets(response.data));
   }, []);
 
+  const handleOpenBucket = (bucketName: string) => {
+    navigate(`/bucket/${bucketName}`);
+  };
+
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
+      if (selected == null) {
+        return;
+      }
       const step = getStep();
       if (e.key === "ArrowRight") {
         setSelected((o) =>
@@ -29,6 +39,8 @@ export const BucketsComponent = () => {
         );
       } else if (e.key === "ArrowUp") {
         setSelected((o) => (o == null ? 0 : Math.max(o - step, 0)));
+      } else if (e.key === "Enter") {
+        handleOpenBucket(buckets[selected].name);
       }
     };
 
@@ -37,7 +49,7 @@ export const BucketsComponent = () => {
     return () => {
       window.removeEventListener("keydown", handleKeyPress);
     };
-  }, [buckets]);
+  }, [buckets, selected]);
 
   useEffect(fetchBuckets, [fetchBuckets]);
 
@@ -49,10 +61,11 @@ export const BucketsComponent = () => {
           buckets.map((bucket, i) => (
             <Col
               key={bucket.name}
-              onClick={() => setSelected(i)}
               xs={{ span: 24 }}
               sm={{ span: 12 }}
               md={{ span: 6 }}
+              onClick={() => setSelected(i)}
+              onDoubleClick={() => handleOpenBucket(bucket.name)}
             >
               <Row
                 className={

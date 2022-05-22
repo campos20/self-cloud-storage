@@ -10,5 +10,6 @@
 }
 
 .selectedBucket {
-  background-color: blue;
+  color: #0092ff;
+  background-color: #e8f0fe;
 }

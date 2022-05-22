@@ -1,14 +1,14 @@
 import { Col, Row } from "antd";
-import { chunk, debounce } from "lodash";
+import { debounce } from "lodash";
 import { useCallback, useEffect, useState } from "react";
 import { s3Api } from "../api/S3Api";
 import { Bucket } from "../model/Bucket";
-
 import style from "./BucketsComponent.module.css";
 
 export const BucketsComponent = () => {
   const [buckets, setBuckets] = useState<Bucket[]>([]);
   const [screenWidth, setWidth] = useState(window.innerWidth);
+  const [selected, setSelected] = useState<number>();
 
   const fetchBuckets = useCallback(() => {
     s3Api.listBuckets().then((response) => setBuckets(response.data));
@@ -19,7 +19,7 @@ export const BucketsComponent = () => {
   useEffect(() => {
     const debouncedHandleResize = debounce(() => {
       setWidth(window.innerWidth);
-    }, 1);
+    }, 500);
 
     window.addEventListener("resize", debouncedHandleResize);
 
@@ -28,33 +28,24 @@ export const BucketsComponent = () => {
     };
   }, []);
 
-  const getColumns = () => {
-    if (screenWidth > 992) {
-      return 6;
-    }
-    if (screenWidth > 576) {
-      return 4;
-    }
-    return 2;
-  };
-
-  const columns = getColumns();
-
-  const chunks = chunk(buckets, columns);
-
   return (
     <>
       <h2>Folders</h2>
-      {buckets.length > 0 &&
-        chunks.map((c) => (
-          <Row gutter={[16, 16]}>
-            {c.map((bucket) => (
-              <Col className={style.bucket} span={24 / columns}>
+      <Row gutter={[8, 8]}>
+        {buckets.length > 0 &&
+          buckets.map((bucket, i) => (
+            <Col key={bucket.name} span={4} onClick={() => setSelected(i)}>
+              <div
+                className={
+                  style.bucket +
+                  (i === selected ? ` ${style.selectedBucket}` : "")
+                }
+              >
                 {bucket.name}
-              </Col>
-            ))}
-          </Row>
-        ))}
+              </div>
+            </Col>
+          ))}
+      </Row>
     </>
   );
 };

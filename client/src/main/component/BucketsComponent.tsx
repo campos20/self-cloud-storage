@@ -1,9 +1,10 @@
+import { FolderOutlined } from "@ant-design/icons";
 import { Col, Row } from "antd";
-import { debounce } from "lodash";
 import { useCallback, useEffect, useState } from "react";
 import { s3Api } from "../api/S3Api";
 import { Bucket } from "../model/Bucket";
 import style from "./BucketsComponent.module.css";
+import { getStep } from "./BucketsComponentUtil";
 
 export const BucketsComponent = () => {
   const [buckets, setBuckets] = useState<Bucket[]>([]);
@@ -15,12 +16,19 @@ export const BucketsComponent = () => {
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
+      const step = getStep();
       if (e.key === "ArrowRight") {
         setSelected((o) =>
           o == null ? 0 : Math.min(o + 1, buckets.length - 1)
         );
       } else if (e.key === "ArrowLeft") {
         setSelected((o) => (o == null ? 0 : Math.max(o - 1, 0)));
+      } else if (e.key === "ArrowDown") {
+        setSelected((o) =>
+          o == null ? 0 : Math.min(o + step, buckets.length - 1)
+        );
+      } else if (e.key === "ArrowUp") {
+        setSelected((o) => (o == null ? 0 : Math.max(o - step, 0)));
       }
     };
 
@@ -34,7 +42,7 @@ export const BucketsComponent = () => {
   useEffect(fetchBuckets, [fetchBuckets]);
 
   return (
-    <>
+    <div>
       <h2>Folders</h2>
       <Row gutter={[8, 8]}>
         {buckets.length > 0 &&
@@ -46,17 +54,20 @@ export const BucketsComponent = () => {
               sm={{ span: 12 }}
               md={{ span: 6 }}
             >
-              <div
+              <Row
                 className={
                   style.bucket +
                   (i === selected ? ` ${style.selectedBucket}` : "")
                 }
               >
-                {bucket.name}
-              </div>
+                <Col span={2}>
+                  <FolderOutlined />
+                </Col>
+                <Col span={22}>{bucket.name}</Col>
+              </Row>
             </Col>
           ))}
       </Row>
-    </>
+    </div>
   );
 };

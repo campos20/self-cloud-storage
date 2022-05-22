@@ -1,8 +1,8 @@
 .bucket {
-  text-align: center;
   border: 1px solid #bbb;
   border-radius: 10px;
-  padding: 10px;
+  padding: 20px 10px;
+  font-size: 120%;
 }
 
 .bucket:hover {

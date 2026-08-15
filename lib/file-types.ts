@@ -17,3 +17,12 @@ export function getFileKind(name: string): FileKind {
   if (TEXT_EXT.has(ext)) return "text";
   return "other";
 }
+
+export const FILE_KIND_ICON: Record<FileKind, string> = {
+  image: "🖼️",
+  pdf: "📄",
+  video: "🎞️",
+  audio: "🎵",
+  text: "📝",
+  other: "📦",
+};

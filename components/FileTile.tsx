@@ -1,18 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { getFileKind } from "@/lib/file-types";
+import { FILE_KIND_ICON, getFileKind } from "@/lib/file-types";
 import { formatBytes } from "@/lib/format";
 import type { FileEntry } from "@/lib/types";
-
-const KIND_ICON: Record<string, string> = {
-  image: "🖼️",
-  pdf: "📄",
-  video: "🎞️",
-  audio: "🎵",
-  text: "📝",
-  other: "📦",
-};
 
 export default function FileTile({
   bucket,
@@ -63,7 +54,7 @@ export default function FileTile({
             className="h-full w-full object-cover"
           />
         ) : (
-          <span className="text-3xl">{KIND_ICON[kind]}</span>
+          <span className="text-3xl">{FILE_KIND_ICON[kind]}</span>
         )}
       </div>
       <div className="w-full">

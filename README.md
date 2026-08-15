@@ -26,6 +26,9 @@ what's in the URL.
 - **Filter** — a text box filters the *current* folder's already-loaded
   listing client-side. This is not full-bucket search (that needs an index,
   which is out of scope for a tool this size).
+- **Cross-region buckets** — each bucket's actual region is discovered
+  automatically (via `HeadBucket`) and cached, so buckets in different
+  regions than your default all work from the same bucket picker.
 - **Read-only** — there is no write, delete, or upload path anywhere in the
   app.
 

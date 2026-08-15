@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import packageJson from "@/package.json";
 
 export const metadata: Metadata = {
   title: "About — Self Cloud Storage",
@@ -12,6 +13,7 @@ export default function AboutPage() {
     <main className="flex-1 px-6 py-8">
       <div className="mx-auto max-w-2xl">
         <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">About</h1>
+        <p className="mt-1 text-xs text-zinc-500">Version {packageJson.version}</p>
 
         <p className="mt-4 text-sm text-zinc-600 dark:text-zinc-400">
           Self Cloud Storage is a local, read-only file browser for your S3

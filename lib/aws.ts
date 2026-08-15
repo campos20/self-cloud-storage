@@ -1,6 +1,8 @@
 import { S3Client, type S3ClientConfig } from "@aws-sdk/client-s3";
+import { STSClient, type STSClientConfig } from "@aws-sdk/client-sts";
 
-const clients = new Map<string, S3Client>();
+const s3Clients = new Map<string, S3Client>();
+let stsClient: STSClient | undefined;
 
 // No explicit credentials: the SDK's default provider chain resolves env
 // vars, ~/.aws/credentials, and SSO the same way the AWS CLI does.
@@ -10,7 +12,7 @@ const clients = new Map<string, S3Client>();
 // region, see lib/s3.ts's resolveBucketRegion.
 export function getS3Client(region?: string): S3Client {
   const cacheKey = region ?? "__default__";
-  let client = clients.get(cacheKey);
+  let client = s3Clients.get(cacheKey);
   if (!client) {
     const config: S3ClientConfig = {};
     const resolvedRegion = region ?? process.env.AWS_REGION;
@@ -18,7 +20,20 @@ export function getS3Client(region?: string): S3Client {
       config.region = resolvedRegion;
     }
     client = new S3Client(config);
-    clients.set(cacheKey, client);
+    s3Clients.set(cacheKey, client);
   }
   return client;
+}
+
+// GetCallerIdentity is region-agnostic (an STS global endpoint), but the
+// client still needs some region configured to sign requests.
+export function getStsClient(): STSClient {
+  if (!stsClient) {
+    const config: STSClientConfig = {};
+    if (process.env.AWS_REGION) {
+      config.region = process.env.AWS_REGION;
+    }
+    stsClient = new STSClient(config);
+  }
+  return stsClient;
 }

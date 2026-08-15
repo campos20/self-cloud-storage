@@ -7,7 +7,7 @@ import FileTile from "./FileTile";
 import FileListRow from "./FileListRow";
 import DetailsPanel from "./DetailsPanel";
 import ContextMenu, { type ContextMenuItem } from "./ContextMenu";
-import DeleteCommandModal from "./DeleteCommandModal";
+import CliCommandModal, { type CliAction } from "./CliCommandModal";
 import type { BrowserTarget, FileEntry } from "@/lib/types";
 
 type ViewMode = "grid" | "list";
@@ -30,7 +30,7 @@ export default function ObjectBrowser({
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; target: BrowserTarget } | null>(
     null
   );
-  const [deleteTarget, setDeleteTarget] = useState<BrowserTarget | null>(null);
+  const [cliCommand, setCliCommand] = useState<{ action: CliAction; target: BrowserTarget } | null>(null);
 
   const folderEntries = useMemo(
     () =>
@@ -110,7 +110,15 @@ export default function ObjectBrowser({
       });
     }
     items.push({ label: "Copy S3 URI", onClick: () => copyToClipboard(uri) });
-    items.push({ label: "Show delete command…", onClick: () => setDeleteTarget(target), danger: true });
+    items.push({
+      label: "Show download command…",
+      onClick: () => setCliCommand({ action: "download", target }),
+    });
+    items.push({
+      label: "Show delete command…",
+      onClick: () => setCliCommand({ action: "delete", target }),
+      danger: true,
+    });
     return items;
   }
 
@@ -239,8 +247,13 @@ export default function ObjectBrowser({
         />
       )}
 
-      {deleteTarget && (
-        <DeleteCommandModal bucket={bucket} target={deleteTarget} onClose={() => setDeleteTarget(null)} />
+      {cliCommand && (
+        <CliCommandModal
+          action={cliCommand.action}
+          bucket={bucket}
+          target={cliCommand.target}
+          onClose={() => setCliCommand(null)}
+        />
       )}
     </div>
   );

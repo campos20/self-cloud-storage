@@ -87,6 +87,13 @@ Optionally, for the bucket-picker entry screen:
 
 - `s3:ListAllMyBuckets` — to list all buckets you have access to
 
+Optionally, for the account-info panel (user icon in the top nav):
+
+- `sts:GetCallerIdentity` — nearly always allowed by default; shows which
+  AWS identity (account ID, ARN, user/role name) this app is currently
+  reading as. If denied, the panel just shows an error instead of failing
+  the rest of the app.
+
 Example minimal policy for one bucket:
 
 ```json
@@ -125,3 +132,7 @@ you also want the bucket picker.
 - `@aws-sdk/client-s3` + `@aws-sdk/s3-request-presigner`
 - Tailwind CSS
 - No database, no auth, no state beyond the URL
+
+## License
+
+[GPL-3.0-or-later](LICENSE).

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { getFileKind } from "@/lib/file-types";
 import { formatBytes, formatDate } from "@/lib/format";
+import { CloseIcon, DownloadIcon } from "./Icons";
 import type { FileEntry } from "@/lib/types";
 
 export default function DetailsPanel({
@@ -66,18 +67,22 @@ export default function DetailsPanel({
           <h2 className="break-all text-sm font-medium text-zinc-900 dark:text-zinc-100">
             {name}
           </h2>
-          <div className="flex shrink-0 items-center gap-2">
+          <div className="flex shrink-0 items-center gap-1">
             <a
               href={downloadSrc}
-              className="rounded border border-zinc-300 px-2 py-1 text-sm text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+              title="Download"
+              aria-label="Download"
+              className="rounded p-1.5 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
             >
-              Download
+              <DownloadIcon className="h-4 w-4" />
             </a>
             <button
               onClick={onClose}
-              className="rounded px-2 py-1 text-sm text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+              title="Close"
+              aria-label="Close"
+              className="rounded p-1.5 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
             >
-              Close
+              <CloseIcon className="h-4 w-4" />
             </button>
           </div>
         </div>

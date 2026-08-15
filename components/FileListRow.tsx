@@ -8,16 +8,19 @@ export default function FileListRow({
   file,
   name,
   onSelect,
+  onContextMenu,
 }: {
   file: FileEntry;
   name: string;
   onSelect: () => void;
+  onContextMenu: (e: React.MouseEvent) => void;
 }) {
   const kind = getFileKind(name);
 
   return (
     <button
       onClick={onSelect}
+      onContextMenu={onContextMenu}
       className="flex w-full items-center gap-3 px-4 py-2 text-left transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-900"
     >
       <span className="text-lg">{FILE_KIND_ICON[kind]}</span>

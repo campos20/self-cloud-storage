@@ -9,3 +9,7 @@ export interface FileEntry {
   lastModified: string | null;
   storageClass: string | null;
 }
+
+export type BrowserTarget =
+  | { type: "file"; file: FileEntry; name: string }
+  | { type: "folder"; fullPrefix: string; name: string };

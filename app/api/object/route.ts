@@ -7,6 +7,7 @@ import { errorMessage } from "@/lib/errors";
 export async function GET(request: NextRequest) {
   const bucket = request.nextUrl.searchParams.get("bucket");
   const key = request.nextUrl.searchParams.get("key");
+  const download = request.nextUrl.searchParams.get("download") === "1";
 
   if (!bucket || !key) {
     return NextResponse.json(
@@ -16,7 +17,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const url = await getPresignedGetUrl(bucket, key);
+    const url = await getPresignedGetUrl(bucket, key, { download });
     return NextResponse.redirect(url, 302);
   } catch (err) {
     console.error(`Failed to presign ${bucket}/${key}:`, err);

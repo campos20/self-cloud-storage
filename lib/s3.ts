@@ -105,9 +105,43 @@ export async function listObjects(
 export async function getPresignedGetUrl(
   bucket: string,
   key: string,
-  expiresInSeconds = 300
+  options: { expiresInSeconds?: number; download?: boolean } = {}
+): Promise<string> {
+  const { expiresInSeconds = 300, download = false } = options;
+  const client = await getClientForBucket(bucket);
+  const command = new GetObjectCommand({
+    Bucket: bucket,
+    Key: key,
+    // With this set, S3's own response carries Content-Disposition, so a
+    // plain link triggers a real download instead of an inline view — no
+    // client-side download-attribute trickery needed, and it survives the
+    // cross-origin redirect from /api/object to S3.
+    ...(download ? { ResponseContentDisposition: buildContentDisposition(key) } : {}),
+  });
+  return getSignedUrl(client, command, { expiresIn: expiresInSeconds });
+}
+
+function buildContentDisposition(key: string): string {
+  const filename = key.split("/").pop() || "download";
+  const asciiFallback = filename.replace(/[^\x20-\x7e]/g, "_").replace(/"/g, "'");
+  return `attachment; filename="${asciiFallback}"; filename*=UTF-8''${encodeURIComponent(filename)}`;
+}
+
+// Text preview is the one case that can't use the redirect-to-presigned-URL
+// approach: the browser follows that redirect with `fetch()`, which is a
+// CORS-checked request, and personal buckets rarely have a CORS policy
+// allowing this app's origin. Requiring one would break the "if the AWS CLI
+// works, this works" promise, so this reads a small range server-side
+// instead — bytes never leave Node's process for anything else.
+export async function getObjectTextPreview(
+  bucket: string,
+  key: string,
+  maxBytes = 50_000
 ): Promise<string> {
   const client = await getClientForBucket(bucket);
-  const command = new GetObjectCommand({ Bucket: bucket, Key: key });
-  return getSignedUrl(client, command, { expiresIn: expiresInSeconds });
+  const res = await client.send(
+    new GetObjectCommand({ Bucket: bucket, Key: key, Range: `bytes=0-${maxBytes - 1}` })
+  );
+  if (!res.Body) return "";
+  return res.Body.transformToString("utf-8");
 }

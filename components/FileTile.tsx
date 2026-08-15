@@ -10,11 +10,13 @@ export default function FileTile({
   file,
   name,
   onSelect,
+  onContextMenu,
 }: {
   bucket: string;
   file: FileEntry;
   name: string;
   onSelect: () => void;
+  onContextMenu: (e: React.MouseEvent) => void;
 }) {
   const ref = useRef<HTMLButtonElement>(null);
   const [visible, setVisible] = useState(false);
@@ -42,6 +44,7 @@ export default function FileTile({
     <button
       ref={ref}
       onClick={onSelect}
+      onContextMenu={onContextMenu}
       className="flex flex-col items-center gap-2 rounded-lg border border-zinc-200 p-3 text-left transition-colors hover:border-zinc-400 hover:bg-zinc-50 dark:border-zinc-800 dark:hover:border-zinc-600 dark:hover:bg-zinc-900"
     >
       <div className="flex h-24 w-full items-center justify-center overflow-hidden rounded bg-zinc-100 dark:bg-zinc-800">

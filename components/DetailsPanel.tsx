@@ -18,19 +18,24 @@ export default function DetailsPanel({
 }) {
   const kind = getFileKind(name);
   const src = `/api/object?bucket=${encodeURIComponent(bucket)}&key=${encodeURIComponent(file.key)}`;
+  const downloadSrc = `${src}&download=1`;
+  // Text preview reads through our own server (not the presigned redirect):
+  // the browser's fetch() would otherwise hit S3 cross-origin, which is
+  // CORS-checked and blocked on buckets without a CORS policy.
+  const textPreviewSrc = `/api/object-text?bucket=${encodeURIComponent(bucket)}&key=${encodeURIComponent(file.key)}`;
   const [text, setText] = useState<string | null>(null);
   const [textError, setTextError] = useState(false);
 
   useEffect(() => {
     if (kind !== "text") return;
     let cancelled = false;
-    fetch(src)
+    fetch(textPreviewSrc)
       .then((r) => {
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
         return r.text();
       })
       .then((t) => {
-        if (!cancelled) setText(t.slice(0, 50_000));
+        if (!cancelled) setText(t);
       })
       .catch(() => {
         if (!cancelled) setTextError(true);
@@ -38,7 +43,7 @@ export default function DetailsPanel({
     return () => {
       cancelled = true;
     };
-  }, [src, kind]);
+  }, [textPreviewSrc, kind]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -61,12 +66,20 @@ export default function DetailsPanel({
           <h2 className="break-all text-sm font-medium text-zinc-900 dark:text-zinc-100">
             {name}
           </h2>
-          <button
-            onClick={onClose}
-            className="shrink-0 rounded px-2 py-1 text-sm text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800"
-          >
-            Close
-          </button>
+          <div className="flex shrink-0 items-center gap-2">
+            <a
+              href={downloadSrc}
+              className="rounded border border-zinc-300 px-2 py-1 text-sm text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+            >
+              Download
+            </a>
+            <button
+              onClick={onClose}
+              className="rounded px-2 py-1 text-sm text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+            >
+              Close
+            </button>
+          </div>
         </div>
 
         <dl className="grid grid-cols-3 gap-2 border-b border-zinc-200 p-4 text-xs dark:border-zinc-800">
@@ -109,12 +122,9 @@ export default function DetailsPanel({
               </pre>
             ))}
           {kind === "other" && (
-            <a
-              href={src}
-              className="text-sm text-blue-600 underline hover:text-blue-700 dark:text-blue-400"
-            >
-              Open / download this file
-            </a>
+            <p className="text-sm text-zinc-500">
+              No inline preview for this file type — use the Download button above.
+            </p>
           )}
         </div>
       </div>

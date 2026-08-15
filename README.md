@@ -1,36 +1,124 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# self-cloud-storage
 
-## Getting Started
+A local, read-only file browser for your S3 buckets — think "Google Drive UI
+for my personal S3 backups." It's a Next.js app you run on your own machine;
+it is never deployed anywhere.
 
-First, run the development server:
+If the AWS CLI works on your machine, this works. There's no login screen,
+no API keys to paste in, and no database — the app reads your existing AWS
+credentials the exact same way the AWS CLI does, and holds no state beyond
+what's in the URL.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## Features
+
+- **Folder navigation** — S3 is flat; this simulates folders using
+  `ListObjectsV2` with a delimiter, with breadcrumbs and a bookmarkable URL
+  (`/?bucket=my-bucket&prefix=photos/2024/`).
+- **Bucket picker** — if your credentials allow `ListBuckets`, you get a
+  picker on load. If not, it falls back to a single bucket read from the
+  `S3_BUCKET` environment variable.
+- **Image previews** — thumbnails lazy-load as you scroll (via
+  `IntersectionObserver`), fetched directly from S3 through short-lived
+  presigned URLs. Bytes never pass through this server.
+- **Details panel** — click any file to see its size, last-modified date,
+  and storage class, plus an inline preview for images, PDFs, video, audio,
+  and text/markdown.
+- **Filter** — a text box filters the *current* folder's already-loaded
+  listing client-side. This is not full-bucket search (that needs an index,
+  which is out of scope for a tool this size).
+- **Read-only** — there is no write, delete, or upload path anywhere in the
+  app.
+
+## Setup
+
+1. Make sure the AWS CLI already works on your machine, i.e. one of these is
+   true:
+   - `~/.aws/credentials` and `~/.aws/config` are set up (via `aws configure`
+     or `aws configure sso`), or
+   - `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` (and optionally
+     `AWS_SESSION_TOKEN`) are set in your environment.
+
+   Verify with:
+
+   ```bash
+   aws sts get-caller-identity
+   ```
+
+2. Install dependencies:
+
+   ```bash
+   npm install
+   ```
+
+3. (Optional) If your AWS profile doesn't have `s3:ListAllMyBuckets`, set a
+   fixed bucket to browse:
+
+   ```bash
+   export S3_BUCKET=my-backup-bucket
+   ```
+
+4. (Optional) If your AWS profile has no default region configured:
+
+   ```bash
+   export AWS_REGION=us-east-1
+   ```
+
+5. Run it:
+
+   ```bash
+   npm run dev
+   ```
+
+   Open <http://127.0.0.1:3000>. The dev server binds to `127.0.0.1` only —
+   it is not reachable from other devices on your network.
+
+## Required IAM permissions
+
+At minimum, the AWS identity you use needs, scoped to the bucket(s) you want
+to browse:
+
+- `s3:ListBucket` — to list folders/files (`ListObjectsV2`)
+- `s3:GetObject` — to generate presigned URLs for previews
+
+Optionally, for the bucket-picker entry screen:
+
+- `s3:ListAllMyBuckets` — to list all buckets you have access to
+
+Example minimal policy for one bucket:
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": ["s3:ListBucket", "s3:GetObject"],
+      "Resource": [
+        "arn:aws:s3:::YOUR_BUCKET",
+        "arn:aws:s3:::YOUR_BUCKET/*"
+      ]
+    }
+  ]
+}
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Add `"s3:ListAllMyBuckets"` with `"Resource": "*"` as a separate statement if
+you also want the bucket picker.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Troubleshooting
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **"AWS credentials not found or expired"** — if you use AWS SSO, run
+  `aws sso login` and reload the page. Otherwise, re-run
+  `aws sts get-caller-identity` to confirm your credentials still work.
+- **"No AWS region configured"** — add `region = ...` to your AWS profile in
+  `~/.aws/config`, or set the `AWS_REGION` environment variable.
+- **"No bucket configured"** — your credentials don't have
+  `s3:ListAllMyBuckets`, and `S3_BUCKET` isn't set. Set `S3_BUCKET` and
+  restart.
 
-## Learn More
+## Stack
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Next.js (App Router) + TypeScript
+- `@aws-sdk/client-s3` + `@aws-sdk/s3-request-presigner`
+- Tailwind CSS
+- No database, no auth, no state beyond the URL

@@ -29,6 +29,8 @@ export default function DetailsPanel({
 
   useEffect(() => {
     if (kind !== "text") return;
+    setText(null);
+    setTextError(false);
     let cancelled = false;
     fetch(textPreviewSrc)
       .then((r) => {
@@ -60,6 +62,8 @@ export default function DetailsPanel({
       onClick={onClose}
     >
       <div
+        role="dialog"
+        aria-modal="true"
         className="flex max-h-[85vh] w-full max-w-2xl flex-col overflow-hidden rounded-lg bg-white shadow-xl dark:bg-zinc-950"
         onClick={(e) => e.stopPropagation()}
       >

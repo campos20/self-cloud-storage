@@ -60,6 +60,8 @@ export default function CliCommandModal({
       onClick={onClose}
     >
       <div
+        role="dialog"
+        aria-modal="true"
         className="w-full max-w-4xl rounded-lg bg-white p-5 shadow-xl dark:bg-zinc-950"
         onClick={(e) => e.stopPropagation()}
       >

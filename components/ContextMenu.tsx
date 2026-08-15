@@ -48,11 +48,14 @@ export default function ContextMenu({
   return (
     <div
       ref={ref}
+      role="menu"
+      aria-label="Context menu"
       style={{ left, top }}
       className="fixed z-50 min-w-[190px] rounded-md border border-zinc-200 bg-white py-1 text-sm shadow-lg dark:border-zinc-700 dark:bg-zinc-900"
     >
       {items.map((item) => (
         <button
+          role="menuitem"
           key={item.label}
           onClick={() => {
             onClose();

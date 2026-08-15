@@ -56,6 +56,7 @@ export default function UserMenu() {
       if (nowOpen && !identity && !loading) {
         setError(null);
         setLoading(true);
+        fetch("/api/whoami")
           .then((r) => r.json().then((body) => ({ ok: r.ok, body })))
           .then(({ ok, body }) => {
             if (!ok) throw new Error(body.error || "Failed to load account info");

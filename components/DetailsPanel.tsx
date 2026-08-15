@@ -29,8 +29,6 @@ export default function DetailsPanel({
 
   useEffect(() => {
     if (kind !== "text") return;
-    setText(null);
-    setTextError(false);
     let cancelled = false;
     fetch(textPreviewSrc)
       .then((r) => {

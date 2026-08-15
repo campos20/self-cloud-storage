@@ -8,9 +8,16 @@ import FileListRow from "./FileListRow";
 import DetailsPanel from "./DetailsPanel";
 import ContextMenu, { type ContextMenuItem } from "./ContextMenu";
 import CliCommandModal, { type CliAction } from "./CliCommandModal";
+import { CloseIcon } from "./Icons";
 import type { BrowserTarget, FileEntry } from "@/lib/types";
 
 type ViewMode = "grid" | "list";
+type SortKey = "name" | "size";
+type SortDir = "asc" | "desc";
+
+function compareByName(a: { name: string }, b: { name: string }) {
+  return a.name.localeCompare(b.name, undefined, { sensitivity: "base", numeric: true });
+}
 
 export default function ObjectBrowser({
   bucket,
@@ -26,6 +33,8 @@ export default function ObjectBrowser({
   const router = useRouter();
   const [filter, setFilter] = useState("");
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
+  const [sortKey, setSortKey] = useState<SortKey | null>(null);
+  const [sortDir, setSortDir] = useState<SortDir>("asc");
   const [selected, setSelected] = useState<{ file: FileEntry; name: string } | null>(null);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; target: BrowserTarget } | null>(
     null
@@ -46,12 +55,27 @@ export default function ObjectBrowser({
   );
 
   const q = filter.trim().toLowerCase();
-  const visibleFolders = q
+  const filteredFolders = q
     ? folderEntries.filter((f) => f.name.toLowerCase().includes(q))
     : folderEntries;
-  const visibleFiles = q
+  const filteredFiles = q
     ? fileEntries.filter((f) => f.name.toLowerCase().includes(q))
     : fileEntries;
+
+  // Folders always come first regardless of sort; "size" sorting doesn't
+  // apply to them (S3 doesn't report folder sizes), so they only re-sort
+  // for "name" and otherwise keep their default alphabetical order.
+  const visibleFolders =
+    sortKey === "name"
+      ? [...filteredFolders].sort((a, b) => (sortDir === "asc" ? 1 : -1) * compareByName(a, b))
+      : filteredFolders;
+  const visibleFiles = sortKey
+    ? [...filteredFiles].sort((a, b) => {
+        const cmp = sortKey === "name" ? compareByName(a, b) : a.file.size - b.file.size;
+        return sortDir === "asc" ? cmp : -cmp;
+      })
+    : filteredFiles;
+
   const isEmpty = visibleFolders.length === 0 && visibleFiles.length === 0;
 
   function openFolderMenu(e: React.MouseEvent, folder: { full: string; name: string }) {
@@ -124,14 +148,47 @@ export default function ObjectBrowser({
 
   return (
     <div>
-      <div className="mb-4 flex items-center justify-between gap-4">
-        <input
-          type="text"
-          value={filter}
-          onChange={(e) => setFilter(e.target.value)}
-          placeholder="Filter this folder…"
-          className="w-full max-w-sm rounded-md border border-zinc-300 px-3 py-1.5 text-sm outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900 dark:focus:border-zinc-500"
-        />
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
+        <div className="flex items-center gap-2">
+          <input
+            type="text"
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+            placeholder="Filter this folder…"
+            className="w-full max-w-sm rounded-md border border-zinc-300 px-3 py-1.5 text-sm outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900 dark:focus:border-zinc-500"
+          />
+          <select
+            value={sortKey ? `${sortKey}-${sortDir}` : ""}
+            onChange={(e) => {
+              const value = e.target.value;
+              if (!value) {
+                setSortKey(null);
+                return;
+              }
+              const [key, dir] = value.split("-") as [SortKey, SortDir];
+              setSortKey(key);
+              setSortDir(dir);
+            }}
+            aria-label="Sort by"
+            className="rounded-md border border-zinc-300 px-2 py-1.5 text-sm text-zinc-700 outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:focus:border-zinc-500"
+          >
+            <option value="">Sort: Default</option>
+            <option value="name-asc">Name (A–Z)</option>
+            <option value="name-desc">Name (Z–A)</option>
+            <option value="size-asc">Size (smallest first)</option>
+            <option value="size-desc">Size (largest first)</option>
+          </select>
+          {sortKey && (
+            <button
+              onClick={() => setSortKey(null)}
+              title="Clear sorting"
+              aria-label="Clear sorting"
+              className="rounded p-1.5 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
+            >
+              <CloseIcon className="h-4 w-4" />
+            </button>
+          )}
+        </div>
         <div className="flex shrink-0 rounded-md border border-zinc-300 p-0.5 dark:border-zinc-700">
           <button
             type="button"

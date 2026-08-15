@@ -16,9 +16,9 @@ export default function AboutPage() {
         <p className="mt-1 text-xs text-zinc-500">Version {packageJson.version}</p>
 
         <p className="mt-4 text-sm text-zinc-600 dark:text-zinc-400">
-          Self Cloud Storage is a local, read-only file browser for your S3
-          buckets — think &ldquo;Google Drive UI for my personal S3
-          backups.&rdquo; It runs entirely on your own machine using your
+          Self Cloud Storage is a local, read-only file browser and viewer
+          for exploring your S3 buckets — think &ldquo;Google Drive UI for
+          S3.&rdquo; It runs entirely on your own machine using your
           existing AWS credentials, the same way the AWS CLI does. It is
           never deployed anywhere, holds no state beyond the URL, and never
           writes, deletes, or uploads anything.

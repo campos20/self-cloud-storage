@@ -1,13 +1,22 @@
 # self-cloud-storage
 
-A local, read-only file browser for your S3 buckets — think "Google Drive UI
-for my personal S3 backups." It's a Next.js app you run on your own machine;
-it is never deployed anywhere.
+A local, read-only file browser and viewer for exploring your S3 buckets —
+think "Google Drive UI for S3." It's a Next.js app you run on your own
+machine; it is never deployed anywhere.
 
 If the AWS CLI works on your machine, this works. There's no login screen,
 no API keys to paste in, and no database — the app reads your existing AWS
 credentials the exact same way the AWS CLI does, and holds no state beyond
 what's in the URL.
+
+> **Not a cheaper Google Drive / OneDrive / iCloud.** This is a viewer for
+> S3 you already have, not a cost-effective way to start storing personal
+> files in the cloud. S3 Standard runs well above flat consumer plans at
+> comparable capacity (e.g. ~$45–50/month for 2TB vs. ~$10/month on
+> Google One or iCloud+), and unlike those services, downloading data back
+> out of S3 (egress) isn't free either. It's the right tool if you already
+> keep data in S3 for other reasons and want a nicer way to browse it —
+> not a migration target if you're starting from zero.
 
 ## Features
 
@@ -57,7 +66,7 @@ what's in the URL.
    fixed bucket to browse:
 
    ```bash
-   export S3_BUCKET=my-backup-bucket
+   export S3_BUCKET=my-bucket
    ```
 
 4. (Optional) If your AWS profile has no default region configured:
